@@ -1,0 +1,32 @@
+#################################################################
+# here's the env setting commands for running test on Colab,
+#################################################################
+
+from google.colab import drive
+drive.mount('/content/drive', force_remount=True)
+
+pip install -q -U google-generativeai
+
+!mkdir -p /drive/ngrok-ssh
+%cd /drive/ngrok-ssh
+!wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip -O ngrok-stable-linux-amd64.zip
+!unzip -u ngrok-stable-linux-amd64.zip
+!cp /drive/ngrok-ssh/ngrok /ngrok
+!chmod +x /ngrok
+
+!/ngrok authtoken <your token here>
+
+!pip install pyngrok
+
+pip install line-bot-sdk
+
+import getpass
+from pyngrok import ngrok, conf
+print("Enter your authtoken, which can be copied from https://dashboard.ngrok.com/auth")
+conf.get_default().auth_token = getpass.getpass()
+# Open a TCP ngrok tunnel to the SSH server
+connection_string = ngrok.connect("22", "tcp").public_url
+ssh_url, port = connection_string.strip("tcp://").split(":")
+print(f" * ngrok tunnel available, access with `ssh root@{ssh_url} -p{port}`")
+
+# RUN main.py here
