@@ -1,5 +1,3 @@
-#### success on Colab
-
 from flask import Flask, request
 from pyngrok import ngrok
 
