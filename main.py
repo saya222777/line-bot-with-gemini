@@ -1,22 +1,10 @@
-from flask import Flask, request
-from pyngrok import ngrok
-
 # 載入 LINE Message API 相關函式庫
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 import json
-
 import google.generativeai as genai
-import os
-
-app = Flask(__name__)
-port = "5000"
-
-# Open a ngrok tunnel to the HTTP server
-public_url = ngrok.connect(port).public_url
-print(f" * ngrok tunnel \"{public_url}\" -> \"http://127.0.0.1:{port}\" ")
 
 ########
 LINE_CHANNEL_SECRET = "---"
@@ -24,8 +12,7 @@ LINE_CHANNEL_ACCESS_TOKEN = "---"
 GEMINI_KEY  = "---"
 ########
 
-@app.route("/", methods=['POST'])
-def linebot():
+def linebot(request):
     body = request.get_data(as_text=True)                    # 取得收到的訊息內容
     try:
         json_data = json.loads(body)                         # json 格式化訊息內容
@@ -38,7 +25,7 @@ def linebot():
         # 取出文字的前五個字元，轉換成小寫
         ai_msg = msg[:6].lower()
         reply_msg = ''
-        print('error 0')
+        # print('error 0')
         # 取出文字的前五個字元是 hi ai:
         if ai_msg == 'hi ai:':
             genai.configure(api_key=GEMINI_KEY)
@@ -46,7 +33,7 @@ def linebot():
             print(msg[6:])
             response = model.generate_content(msg[6:])
             reply_msg = response.text
-            print(reply_msg)
+            # print(reply_msg)
         else:
             reply_msg = msg
         text_message = TextSendMessage(text=reply_msg)
@@ -55,5 +42,3 @@ def linebot():
         print('### error')   # 如果發生錯誤，印出收到的內容
         print(body)
     return 'OK'                 # 驗證 Webhook 使用，不能省略
-if __name__ == "__main__":
-  app.run()
